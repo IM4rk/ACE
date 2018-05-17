@@ -172,6 +172,106 @@ elsif ($ENVIRONMENT eq "ecdb")
 {
          print color ("red"), "Setting up Directories for UKCLOUD Live Environment \n", color("reset");
 
+
+#-----Defining Directories
+        $DATAFILE_1 = "/oracle/oradata/$UPPER_SID";
+        $DATAFILE_2 = "/oracle/oradata/$UPPER_SID";
+        $FRA = "/oracle/fra/$UPPER_SID";
+        $CONTROLFILE = "$FRA/controlfile";
+
+#-----Directory exist checker
+        our $CMD_CHECK_DIR_DF1 = "ls -altr $DATAFILE_1 2>/dev/null | wc -l";
+        our $DIR_EXIST1 = `$CMD_CHECK_DIR_DF1`;
+
+        our $CMD_CHECK_DIR_DF2 = "ls -altr $DATAFILE_2 2>/dev/null | wc -l";
+        our $DIR_EXIST2 = `$CMD_CHECK_DIR_DF2`;
+
+        our $CMD_CHECK_DIR_FRA = "ls -altr $FRA 2>/dev/null | wc -l";
+        our $DIR_EXIST3 = `$CMD_CHECK_DIR_FRA`;
+
+        our $CMD_CHECK_DIR_CONTROLFILE = "ls -altr $CONTROLFILE 2>/dev/null | wc -l";
+        our $DIR_EXIST4 = `$CMD_CHECK_DIR_CONTROLFILE`;
+
+
+#-------Directory creator
+
+        #---DATAFILES 1
+        if ($DIR_EXIST1 == 0)
+        {
+                print color ("blue"),"Datafile directory 1 does not exist creating a new one\n" ,color("reset") ;
+                our $CMD_MKDIR_DATAFILES_1 = "mkdir -p $DATAFILE_1";
+                `$CMD_MKDIR_DATAFILES_1`;
+
+        }
+        else
+        {
+                 print  color ("blue"),"Skipping directory Creation for Datafiles directory 1....\n" ,color("reset");
+        }
+
+        #---DATAFILES 2
+        if ($DIR_EXIST2 == 0)
+        {
+                print color ("blue"),"Datafile directory 2 does not exist, creating a new one\n" ,color("reset");
+                our $CMD_MKDIR_DATAFILES_2 = "mkdir -p $DATAFILE_2";
+                `$CMD_MKDIR_DATAFILES_2`;
+
+        }
+        else
+        {
+                 print color ("blue"),"Skipping directory Creation for Datafiles directory 2....\n" ,color("reset");
+        }
+
+        #---FRA
+        if ($DIR_EXIST3 == 0)
+        {
+                print color ("blue"),"FRA directory does not exist, creating a new one\n" ,color("reset");
+                our $CMD_MKDIR_FRA = "mkdir -p $FRA";
+                `$CMD_MKDIR_FRA`;
+
+        }
+        else
+        {
+                 print color ("blue"),"Skipping directory Creation for FRA....\n"  ,color("reset");
+        }
+
+        #--CONTROLFILE
+        if ($DIR_EXIST4 == 0)
+        {
+        print color ("blue"), "Controlfile directory does not exist creating a new one\n"  ,color("reset");
+        our $CMD_MKDIR_CTL = "mkdir -p $CONTROLFILE";
+        `$CMD_MKDIR_CTL`;
+		        }
+        else
+        {
+         print color ("blue"),"Skipping directory Creation for controlfile....\n"  ,color("reset");
+        }
+
+
+print  color ("green"), "Source: \n", color("reset");
+print "$SOURCE_DB \n";
+
+
+#---Print directory setup
+
+print  color ("green"), "Target_name: \n", color("reset");
+print "$DB_SID \n";
+
+print  color ("green"), "Datafiles will be restored in: \n", color("reset");
+print "$DATAFILE_1 \n";
+
+print  color ("green"),"Datafiles multiplexed directory:\n" ,color("reset");
+print "$DATAFILE_2 \n";
+
+print  color ("green"), "Archivelogs directory: \n", color("reset");
+print "$FRA \n";
+
+print  color ("green"), "Controlfiles directory: \n", color("reset");
+print "$CONTROLFILE \n";
+
+print  color ("green"), "Backup  directory: \n", color("reset");
+print "$BACKUP_DIR \n";
+	
+
 }
 
 elsif ($ENVIRONMENT eq "edud")
