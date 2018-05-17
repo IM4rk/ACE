@@ -1,0 +1,138 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long;
+use File::Copy;
+use Env;
+use Term::ANSIColor;
+
+#================================================================================================================================
+#Choose the source and target database												|
+#================================================================================================================================
+
+print  color ("blue"),"Name of the Sorce Database: \n", color("reset");
+our $SOURCE_DB = <STDIN>;
+chomp $SOURCE_DB;
+
+print  color ("blue"),"Choose SID: \n", color("reset");
+our $DB_SID = <STDIN>;
+chomp $DB_SID;
+
+
+#================================================================================================================================
+#Detect Environment and set the the corresponding directories									|
+#================================================================================================================================
+
+our $CMD_DETECT_ENVIRONMENT = "hostname";
+our $FIRST7 = `$CMD_DETECT_ENVIRONMENT`;
+our $ENVIRONMENT = substr($FIRST7, 0,7);
+
+
+
+if ($ENVIRONMENT eq "edu-dev")
+{
+	print color ("red"), "Setting up Directories for OGA Development Environment \n", color("reset");
+	our $DATAFILE_1 = "/oracle/oradata/$DB_SID";
+
+	our $CMD_MKDIR_DATAFILES_1 = "mkdir -p $DATAFILE_1";
+	`$CMD_MKDIR_DATAFILES_1`;
+	
+	our $CMD_CHECK_DIR = "ls -altr /oracle/oradata/oradata2 | wc -l";
+	our $DIR_EXIST = `$CMD_CHECK_DIR`;
+	
+	if ($DIR_EXIST == 0)
+	{
+		print "directory not exist creating a new one\n";
+		our $CMD_MKDIR_DATAFILES_2 = "mkdir -p /oracle/oradata/oradata2/$DB_SID";
+		`$CMD_MKDIR_DATAFILES_2`;
+
+	}
+	else 
+	{
+		our $CMD_MKDIR_DATAFILES_2 = "mkdir -p /oracle/oradata/oradata2/$DB_SID";
+		`$CMD_MKDIR_DATAFILES_2`;
+	}
+
+	our $DATAFILE_2 = "/oracle/oradata/oradata2/$DB_SID";
+	
+	our $CMD_MKDIR_FRA = "mkdir -p /oracle/fra/$DB_SID";
+	`$CMD_MKDIR_FRA`;
+	our $FRA = "/oracle/fra/$DB_SID";
+
+
+	our $CMD_MKDIR_CTL = "mkdir -p /oracle/oradata/$DB_SID/controlfile";
+        `$CMD_MKDIR_CTL`;
+        our $CONTROLFILE = "/oracle/oradata/$DB_SID/controlfile";
+	
+  	print  color ("green"), "source: \n", color("reset");
+	print "$SOURCE_DB \n";
+
+
+
+
+	print  color ("green"), "target_name: \n", color("reset");
+        print "$DB_SID \n";
+
+	print  color ("green"), "Datafiles will be restored in: \n", color("reset"); 
+	print "$DATAFILE_1 \n";
+	
+	print  color ("green"),"Datafiles multiplexed directory:\n" ,color("reset");
+	print "$DATAFILE_2 \n";
+	
+	print  color ("green"), "Archivelogs directory: \n", color("reset");
+	print "$FRA \n";
+
+	print  color ("green"), "Controlfiles directory: \n", color("reset");
+        print "$CONTROLFILE \n";
+			
+
+}
+
+
+
+
+
+
+=pod
+#================================================================================================================
+#Check or create directory based  dir provided by the user Generic User                                         |
+#================================================================================================================
+
+print "Choose SID: \n";
+our $DB_SID = <STDIN>;
+chomp $DB_SID;
+print "Choose datafiles directory: \n";
+our $DATAFILES = <STDIN>;
+chomp $DATAFILES;
+
+ 
+
+
+print "your chosen SID is $DB_SID\n";
+our $CMD_CHECK_DIR = "ls -altr $DATAFILES/$DB_SID | wc -l ";
+print "$DATAFILES/$DB_SID \n";
+our $DIR_EXIST = `$CMD_CHECK_DIR`;
+
+
+if ($DIR_EXIST == 0)
+{
+	print "directory not exist creating a new one\n";
+	our $CMD_MKDIR_DATAFILES = "mkdir -p $DATAFILES/$DB_SID";
+	`$CMD_MKDIR_DATAFILES`;
+	our $CMD_MKDIR_CONTROL = "mkdir -p $DATAFILES/$DB_SID/controlfile";
+	`$CMD_MKDIR_CONTROL`;
+	print "Datafiles will be restored in: $DATAFILES/$DB_SID \n";
+	print "$ORACLE_BASE \n"; 
+
+}
+else 
+{
+	print "Datafiles will be restored in: $DATAFILES/$DB_SID \n";
+	our $CMD_MKDIR_CONTROL = "mkdir -p $DATAFILES/$DB_SID/controlfile";
+	`$CMD_MKDIR_CONTROL`;
+
+}
+=cut
+
+
+

@@ -1,0 +1,107 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long;
+use File::Copy;
+use Env;
+
+#
+#Choose the name of the SID
+#
+print "Choose SID: \n";
+our $DB_SID = <STDIN>;
+chomp $DB_SID;
+
+
+#
+#Detect Environment and Set up dir
+#
+
+our $CMD_DETECT_ENVIRONMENT = "hostname";
+our $FIRST5 = `$CMD_DETECT_ENVIRONMENT`;
+our $ENVIRONMENT = substr($FIRST5, 0,5);
+
+
+print "$ENVIRONMENT \n";
+
+if ($ENVIRONMENT eq "edu-d")
+{
+	print "Setting up Directories for OGA environment \n";
+	our $DATAFILE_1 = "/oracle/oradata/$DB_SID";
+
+	our $CMD_MKDIR_DATAFILES_1 = "mkdir -p $DATAFILE_1";
+	`$CMD_MKDIR_DATAFILES_1`;
+	
+	our $CMD_CHECK_DIR = "ls -altr /oracle/oradata/oradata2 | wc -l";
+	our $DIR_EXIST = `$CMD_CHECK_DIR`;
+	
+	if ($DIR_EXIST == 0)
+	{
+		print "directory not exist creating a new one\n";
+		our $CMD_MKDIR_DATAFILES_2 = "mkdir -p /oracle/oradata/oradata2/$DB_SID";
+		`$CMD_MKDIR_DATAFILES_2`;
+
+	}
+	else 
+	{
+		our $CMD_MKDIR_DATAFILES_2 = "mkdir -p /oracle/oradata/oradata2/$DB_SID";
+		`$CMD_MKDIR_DATAFILES_2`;
+
+	}
+
+	 our $DATAFILE_2 = "/oracle/oradata/oradata2/$DB_SID";
+	
+	print "$DATAFILE_1 \n";
+	print "$DATAFILE_2 \n";
+		
+
+}
+
+
+
+
+
+
+=pod
+#================================================================================================================
+#Check or create directory based  dir provided by the user Generic User                                         |
+#================================================================================================================
+
+print "Choose SID: \n";
+our $DB_SID = <STDIN>;
+chomp $DB_SID;
+print "Choose datafiles directory: \n";
+our $DATAFILES = <STDIN>;
+chomp $DATAFILES;
+
+ 
+
+
+print "your chosen SID is $DB_SID\n";
+our $CMD_CHECK_DIR = "ls -altr $DATAFILES/$DB_SID | wc -l ";
+print "$DATAFILES/$DB_SID \n";
+our $DIR_EXIST = `$CMD_CHECK_DIR`;
+
+
+if ($DIR_EXIST == 0)
+{
+	print "directory not exist creating a new one\n";
+	our $CMD_MKDIR_DATAFILES = "mkdir -p $DATAFILES/$DB_SID";
+	`$CMD_MKDIR_DATAFILES`;
+	our $CMD_MKDIR_CONTROL = "mkdir -p $DATAFILES/$DB_SID/controlfile";
+	`$CMD_MKDIR_CONTROL`;
+	print "Datafiles will be restored in: $DATAFILES/$DB_SID \n";
+	print "$ORACLE_BASE \n"; 
+
+}
+else 
+{
+	print "Datafiles will be restored in: $DATAFILES/$DB_SID \n";
+	our $CMD_MKDIR_CONTROL = "mkdir -p $DATAFILES/$DB_SID/controlfile";
+	`$CMD_MKDIR_CONTROL`;
+
+}
+=cut
+
+
+

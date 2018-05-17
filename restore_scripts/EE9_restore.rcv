@@ -1,0 +1,32 @@
+SELECT
+*
+ERROR at line 1:
+ORA-01012: not logged on
+Process ID: 0
+Session ID: 0 Serial number: 0
+
+
+SELECT
+*
+ERROR at line 1:
+ORA-01012: not logged on
+Process ID: 0
+Session ID: 0 Serial number: 0
+
+
+SELECT
+*
+ERROR at line 1:
+ORA-01012: not logged on
+Process ID: 0
+Session ID: 0 Serial number: 0
+
+
+SELECT
+*
+ERROR at line 1:
+ORA-01012: not logged on
+Process ID: 0
+Session ID: 0 Serial number: 0
+
+

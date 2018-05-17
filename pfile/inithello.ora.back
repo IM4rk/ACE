@@ -1,0 +1,17 @@
+*.audit_trail='db'
+*.control_files='/oracle/oradata/HELLO/controlfile/hello.ctl'
+*.db_block_size=8192
+*.db_name='<source_dbname>'
+*.db_unique_name='hello'
+*.db_recovery_file_dest='/oracle/fra'
+*.db_recovery_file_dest_size=4560m
+*.diagnostic_dest='/oracle'
+*.log_archive_format='%t_%s_%r.arc'
+*.nls_language='ENGLISH'
+*.nls_territory='UNITED KINGDOM'
+*.open_cursors=300
+*.pga_aggregate_target=256m
+*.sga_target=768m
+*.undo_tablespace='UNDOTBS1'
+*.compatible = '12.1.0.2.0'
+

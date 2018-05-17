@@ -1,0 +1,52 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Long;
+use File::Copy;
+use Env;
+
+
+#================================================================================================================
+#Check or create directory based  dir provided by the user                                                      |
+#================================================================================================================
+
+print "Choose SID: \n";
+our $DB_SID = <STDIN>;
+chomp $DB_SID;
+print "Choose datafiles directory: \n";
+our $DATAFILES = <STDIN>;
+chomp $DATAFILES;
+
+ 
+
+
+print "your chosen SID is $DB_SID\n";
+our $CMD_CHECK_DIR = "ls -altr $DATAFILES/$DB_SID | wc -l ";
+print "$DATAFILES/$DB_SID \n";
+our $DIR_EXIST = `$CMD_CHECK_DIR`;
+
+
+if ($DIR_EXIST == 0)
+{
+	print "directory not exist creating a new one\n";
+	our $CMD_MKDIR_DATAFILES = "mkdir -p $DATAFILES/$DB_SID";
+	`$CMD_MKDIR_DATAFILES`;
+	our $CMD_MKDIR_CONTROL = "mkdir -p $DATAFILES/$DB_SID/controlfile";
+	`$CMD_MKDIR_CONTROL`;
+	print "Datafiles will be restored in: $DATAFILES/$DB_SID \n";
+	print "$ORACLE_BASE \n"; 
+
+}
+else 
+{
+	print "Datafiles will be restored in: $DATAFILES/$DB_SID \n";
+	our $CMD_MKDIR_CONTROL = "mkdir -p $DATAFILES/$DB_SID/controlfile";
+	`$CMD_MKDIR_CONTROL`;
+
+}
+
+
+
+
+
+

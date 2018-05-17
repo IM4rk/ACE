@@ -1,0 +1,14 @@
+run{
+set until sequence 2;
+
+set newname for datafile 3 to "/oracle/oradata/oradata2/LAST/SYSAUX_01.dbf";
+set newname for datafile 1 to "/oracle/oradata/oradata2/LAST/SYSTEM_01.dbf";
+set newname for datafile 4 to "/oracle/oradata/LAST/UNDOTBS1_01.dbf";
+set newname for datafile 6 to "/oracle/oradata/LAST/USERS_01.dbf";
+
+restore database;
+switch datafile all;
+recover database;
+alter database open resetlogs;
+}
+

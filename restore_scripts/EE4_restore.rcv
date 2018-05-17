@@ -1,0 +1,24 @@
+  v$backup_archivelog_details
+  *
+ERROR at line 11:
+ORA-01507: database not mounted
+
+
+     (SELECT UPPER(instance_name) FROM v$instance) || '/' ||
+                                       *
+ERROR at line 13:
+ORA-01507: database not mounted
+
+
+  v$database
+  *
+ERROR at line 12:
+ORA-01507: database not mounted
+
+
+restore database;
+switch datafile all;
+recover database;
+
+}
+
