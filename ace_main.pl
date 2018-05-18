@@ -18,7 +18,6 @@ print  color ("green"),"Choose Clone SID: \n", color("reset");
 our $DB_SID = <STDIN>;
 chomp $DB_SID;
 our $UPPER_SID = uc $DB_SID;
-print "SId converted :$UPPER_SID \n";
 
 print  color ("green"),"Define your Backup directory: \n", color("reset");
 our $BACKUP_DIR = <STDIN>;
@@ -42,72 +41,554 @@ our $CMD_SHUTDOWN_ABORT = "sqlplus / as sysdba \@$SQL_SCRIPTS/shutdown_abort.sql
 #================================================================================================================================
 
 our $CMD_DETECT_ENVIRONMENT = "hostname";
-our $FIRST7 = `$CMD_DETECT_ENVIRONMENT`;
-our $ENVIRONMENT = substr($FIRST7, 0,7);
+our $FIRST4 = `$CMD_DETECT_ENVIRONMENT`;
+our $ENVIRONMENT = substr($FIRST4, 0,4);
 
+#---Remove the trailing forward slash on the backup dir if it exist
+$BACKUP_DIR = $1 if($BACKUP_DIR=~/(.*)\/$/);
 
+print "Environemnt string: $ENVIRONMENT\n";
 
-if ($ENVIRONMENT eq "edu-dev")
+if ($ENVIRONMENT eq "edu-")
 {
 	print color ("red"), "Setting up Directories for OGA Development Environment \n", color("reset");
+	
+#-----Defining Directories
 	$DATAFILE_1 = "/oracle/oradata/$UPPER_SID";
+	$DATAFILE_2 = "/oracle/oradata/oradata2/$UPPER_SID";
+	$FRA = "/oracle/fra/$UPPER_SID";
+	$CONTROLFILE = "$FRA/controlfile";
+	
+#-----Directory exist checker		
+	our $CMD_CHECK_DIR_DF1 = "ls -altr $DATAFILE_1 2>/dev/null | wc -l";
+	our $DIR_EXIST1 = `$CMD_CHECK_DIR_DF1`;
 
-	our $CMD_MKDIR_DATAFILES_1 = "mkdir -p $DATAFILE_1";
-	`$CMD_MKDIR_DATAFILES_1`;
+	our $CMD_CHECK_DIR_DF2 = "ls -altr $DATAFILE_2 2>/dev/null | wc -l";
+	our $DIR_EXIST2 = `$CMD_CHECK_DIR_DF2`;
+
+	our $CMD_CHECK_DIR_FRA = "ls -altr $FRA 2>/dev/null | wc -l";
+	our $DIR_EXIST3 = `$CMD_CHECK_DIR_FRA`;
+
+	our $CMD_CHECK_DIR_CONTROLFILE = "ls -altr $CONTROLFILE 2>/dev/null | wc -l";
+        our $DIR_EXIST4 = `$CMD_CHECK_DIR_CONTROLFILE`;
+
+
+#-------Directory creator	
 	
-	our $CMD_CHECK_DIR = "ls -altr /oracle/oradata/oradata2 | wc -l";
-	our $DIR_EXIST = `$CMD_CHECK_DIR`;
-	
-	if ($DIR_EXIST == 0)
+	#---DATAFILES 1	
+	if ($DIR_EXIST1 == 0)
 	{
-		print "directory not exist creating a new one\n";
-		our $CMD_MKDIR_DATAFILES_2 = "mkdir -p /oracle/oradata/oradata2/$UPPER_SID";
-		`$CMD_MKDIR_DATAFILES_2`;
+		print color ("blue"),"Datafile directory 1 does not exist creating a new one\n" ,color("reset") ;
+		our $CMD_MKDIR_DATAFILES_1 = "mkdir -p $DATAFILE_1";
+		`$CMD_MKDIR_DATAFILES_1`;
 
 	}
 	else 
 	{
-		our $CMD_MKDIR_DATAFILES_2 = "mkdir -p /oracle/oradata/oradata2/$UPPER_SID";
-		`$CMD_MKDIR_DATAFILES_2`;
+		 print  color ("blue"),"Skipping directory Creation for Datafiles directory 1....\n" ,color("reset");
 	}
 
-	$DATAFILE_2 = "/oracle/oradata/oradata2/$UPPER_SID";
-	
-	our $CMD_MKDIR_FRA = "mkdir -p /oracle/fra/$UPPER_SID";
-	`$CMD_MKDIR_FRA`;
-	$FRA = "/oracle/fra/$UPPER_SID";
+	#---DATAFILES 2
+	if ($DIR_EXIST2 == 0)
+        {
+                print color ("blue"),"Datafile directory 2 does not exist, creating a new one\n" ,color("reset");
+                our $CMD_MKDIR_DATAFILES_2 = "mkdir -p $DATAFILE_2";
+                `$CMD_MKDIR_DATAFILES_2`;
 
+        }
+        else
+        {
+                 print color ("blue"),"Skipping directory Creation for Datafiles directory 2....\n" ,color("reset");
+        }
 
-	our $CMD_MKDIR_CTL = "mkdir -p /oracle/oradata/$UPPER_SID/controlfile";
+	#---FRA
+	if ($DIR_EXIST3 == 0)
+        {
+                print color ("blue"),"FRA directory does not exist, creating a new one\n" ,color("reset");
+                our $CMD_MKDIR_FRA = "mkdir -p $FRA";
+                `$CMD_MKDIR_FRA`;
+
+        }
+        else
+        {
+                 print color ("blue"),"Skipping directory Creation for FRA....\n"  ,color("reset");
+        }
+
+	#--CONTROLFILE
+	if ($DIR_EXIST4 == 0)
+	{
+        print color ("blue"), "Controlfile directory does not exist creating a new one\n"  ,color("reset");
+        our $CMD_MKDIR_CTL = "mkdir -p $CONTROLFILE";
         `$CMD_MKDIR_CTL`;
-        $CONTROLFILE = "/oracle/oradata/$UPPER_SID/controlfile";
+
+	}
+	else
+	{
+         print color ("blue"),"Skipping directory Creation for controlfile....\n"  ,color("reset");
+	}
 	
-  	print  color ("green"), "source: \n", color("reset");
-	print "$SOURCE_DB \n";
+  	
+print  color ("green"), "Source: \n", color("reset");
+print "$SOURCE_DB \n";
 
 
+#---Print directory setup
 
+print  color ("green"), "Target_name: \n", color("reset");
+print "$DB_SID \n";
 
-	print  color ("green"), "target_name: \n", color("reset");
-        print "$DB_SID \n";
-
-	print  color ("green"), "Datafiles will be restored in: \n", color("reset"); 
-	print "$DATAFILE_1 \n";
+print  color ("green"), "Datafiles will be restored in: \n", color("reset"); 
+print "$DATAFILE_1 \n";
 	
-	print  color ("green"),"Datafiles multiplexed directory:\n" ,color("reset");
-	print "$DATAFILE_2 \n";
+print  color ("green"),"Datafiles multiplexed directory:\n" ,color("reset");
+print "$DATAFILE_2 \n";
 	
-	print  color ("green"), "Archivelogs directory: \n", color("reset");
-	print "$FRA \n";
+print  color ("green"), "Archivelogs directory: \n", color("reset");
+print "$FRA \n";
 
-	print  color ("green"), "Controlfiles directory: \n", color("reset");
-        print "$CONTROLFILE \n";
+print  color ("green"), "Controlfiles directory: \n", color("reset");
+print "$CONTROLFILE \n";
 
-	print  color ("green"), "Backup  directory: \n", color("reset");
-        print "$BACKUP_DIR \n";
+print  color ("green"), "Backup  directory: \n", color("reset");
+print "$BACKUP_DIR \n";
 			
 
 }
+elsif ($ENVIRONMENT eq "fiv-")
+{
+	print color ("red"), "Setting up Directories for Fivium HQ Development Environment \n", color("reset");
+
+
+#-----Defining Directories
+        $DATAFILE_1 = "/oracle/oradata/$UPPER_SID";
+        $DATAFILE_2 = "/oracle/oradata/$UPPER_SID";
+        $FRA = "/oracle/fra/$UPPER_SID";
+        $CONTROLFILE = "$FRA/controlfile";
+
+#-----Directory exist checker
+        our $CMD_CHECK_DIR_DF1 = "ls -altr $DATAFILE_1 2>/dev/null | wc -l";
+        our $DIR_EXIST1 = `$CMD_CHECK_DIR_DF1`;
+
+        our $CMD_CHECK_DIR_DF2 = "ls -altr $DATAFILE_2 2>/dev/null | wc -l";
+        our $DIR_EXIST2 = `$CMD_CHECK_DIR_DF2`;
+
+        our $CMD_CHECK_DIR_FRA = "ls -altr $FRA 2>/dev/null | wc -l";
+        our $DIR_EXIST3 = `$CMD_CHECK_DIR_FRA`;
+
+        our $CMD_CHECK_DIR_CONTROLFILE = "ls -altr $CONTROLFILE 2>/dev/null | wc -l";
+        our $DIR_EXIST4 = `$CMD_CHECK_DIR_CONTROLFILE`;
+
+
+#-------Directory creator
+
+        #---DATAFILES 1
+        if ($DIR_EXIST1 == 0)
+        {
+                print color ("blue"),"Datafile directory 1 does not exist creating a new one\n" ,color("reset") ;
+                our $CMD_MKDIR_DATAFILES_1 = "mkdir -p $DATAFILE_1";
+                `$CMD_MKDIR_DATAFILES_1`;
+
+        }
+        else
+        {
+                 print  color ("blue"),"Skipping directory Creation for Datafiles directory 1....\n" ,color("reset");
+        }
+
+        #---DATAFILES 2
+        if ($DIR_EXIST2 == 0)
+        {
+                print color ("blue"),"Datafile directory 2 does not exist, creating a new one\n" ,color("reset");
+                our $CMD_MKDIR_DATAFILES_2 = "mkdir -p $DATAFILE_2";
+                `$CMD_MKDIR_DATAFILES_2`;
+
+        }
+        else
+        {
+                 print color ("blue"),"Skipping directory Creation for Datafiles directory 2....\n" ,color("reset");
+        }
+
+        #---FRA
+        if ($DIR_EXIST3 == 0)
+        {
+                print color ("blue"),"FRA directory does not exist, creating a new one\n" ,color("reset");
+                our $CMD_MKDIR_FRA = "mkdir -p $FRA";
+                `$CMD_MKDIR_FRA`;
+
+        }
+        else
+        {
+                 print color ("blue"),"Skipping directory Creation for FRA....\n"  ,color("reset");
+        }
+
+        #--CONTROLFILE
+        if ($DIR_EXIST4 == 0)
+        {
+        print color ("blue"), "Controlfile directory does not exist creating a new one\n"  ,color("reset");
+        our $CMD_MKDIR_CTL = "mkdir -p $CONTROLFILE";
+        `$CMD_MKDIR_CTL`;
+		        }
+        else
+        {
+         print color ("blue"),"Skipping directory Creation for controlfile....\n"  ,color("reset");
+        }
+
+
+print  color ("green"), "Source: \n", color("reset");
+print "$SOURCE_DB \n";
+
+
+#---Print directory setup
+
+print  color ("green"), "Target_name: \n", color("reset");
+print "$DB_SID \n";
+
+print  color ("green"), "Datafiles will be restored in: \n", color("reset");
+print "$DATAFILE_1 \n";
+
+print  color ("green"),"Datafiles multiplexed directory:\n" ,color("reset");
+print "$DATAFILE_2 \n";
+
+print  color ("green"), "Archivelogs directory: \n", color("reset");
+print "$FRA \n";
+
+print  color ("green"), "Controlfiles directory: \n", color("reset");
+print "$CONTROLFILE \n";
+
+print  color ("green"), "Backup  directory: \n", color("reset");
+print "$BACKUP_DIR \n";
+
+		
+		
+		
+
+
+
+}
+
+elsif ($ENVIRONMENT eq "db1.") 
+{
+	 print color ("red"), "Setting up Directories for AWS Live Environment \n", color("reset");
+
+
+#-----Defining Directories
+        $DATAFILE_1 = "/oracle/oradata/$UPPER_SID";
+        $DATAFILE_2 = "/oracle/oradata/$UPPER_SID";
+        $FRA = "/oracle/fra/$UPPER_SID";
+        $CONTROLFILE = "$FRA/controlfile";
+
+#-----Directory exist checker
+        our $CMD_CHECK_DIR_DF1 = "ls -altr $DATAFILE_1 2>/dev/null | wc -l";
+        our $DIR_EXIST1 = `$CMD_CHECK_DIR_DF1`;
+
+        our $CMD_CHECK_DIR_DF2 = "ls -altr $DATAFILE_2 2>/dev/null | wc -l";
+        our $DIR_EXIST2 = `$CMD_CHECK_DIR_DF2`;
+
+        our $CMD_CHECK_DIR_FRA = "ls -altr $FRA 2>/dev/null | wc -l";
+        our $DIR_EXIST3 = `$CMD_CHECK_DIR_FRA`;
+
+        our $CMD_CHECK_DIR_CONTROLFILE = "ls -altr $CONTROLFILE 2>/dev/null | wc -l";
+        our $DIR_EXIST4 = `$CMD_CHECK_DIR_CONTROLFILE`;
+
+
+#-------Directory creator
+
+        #---DATAFILES 1
+        if ($DIR_EXIST1 == 0)
+        {
+                print color ("blue"),"Datafile directory 1 does not exist creating a new one\n" ,color("reset") ;
+                our $CMD_MKDIR_DATAFILES_1 = "mkdir -p $DATAFILE_1";
+                `$CMD_MKDIR_DATAFILES_1`;
+
+        }
+        else
+        {
+                 print  color ("blue"),"Skipping directory Creation for Datafiles directory 1....\n" ,color("reset");
+        }
+
+        #---DATAFILES 2
+        if ($DIR_EXIST2 == 0)
+        {
+                print color ("blue"),"Datafile directory 2 does not exist, creating a new one\n" ,color("reset");
+                our $CMD_MKDIR_DATAFILES_2 = "mkdir -p $DATAFILE_2";
+                `$CMD_MKDIR_DATAFILES_2`;
+
+        }
+        else
+        {
+                 print color ("blue"),"Skipping directory Creation for Datafiles directory 2....\n" ,color("reset");
+        }
+
+        #---FRA
+        if ($DIR_EXIST3 == 0)
+        {
+                print color ("blue"),"FRA directory does not exist, creating a new one\n" ,color("reset");
+                our $CMD_MKDIR_FRA = "mkdir -p $FRA";
+                `$CMD_MKDIR_FRA`;
+
+        }
+        else
+        {
+                 print color ("blue"),"Skipping directory Creation for FRA....\n"  ,color("reset");
+        }
+
+        #--CONTROLFILE
+        if ($DIR_EXIST4 == 0)
+        {
+        print color ("blue"), "Controlfile directory does not exist creating a new one\n"  ,color("reset");
+        our $CMD_MKDIR_CTL = "mkdir -p $CONTROLFILE";
+        `$CMD_MKDIR_CTL`;
+		        }
+        else
+        {
+         print color ("blue"),"Skipping directory Creation for controlfile....\n"  ,color("reset");
+        }
+
+
+print  color ("green"), "Source: \n", color("reset");
+print "$SOURCE_DB \n";
+
+
+#---Print directory setup
+
+print  color ("green"), "Target_name: \n", color("reset");
+print "$DB_SID \n";
+
+print  color ("green"), "Datafiles will be restored in: \n", color("reset");
+print "$DATAFILE_1 \n";
+
+print  color ("green"),"Datafiles multiplexed directory:\n" ,color("reset");
+print "$DATAFILE_2 \n";
+
+print  color ("green"), "Archivelogs directory: \n", color("reset");
+print "$FRA \n";
+
+print  color ("green"), "Controlfiles directory: \n", color("reset");
+print "$CONTROLFILE \n";
+
+print  color ("green"), "Backup  directory: \n", color("reset");
+print "$BACKUP_DIR \n";
+
+		
+		
+		
+
+
+}
+
+elsif ($ENVIRONMENT eq "ecdb")
+{
+         print color ("red"), "Setting up Directories for UKCLOUD Live Environment \n", color("reset");
+
+
+#-----Defining Directories
+        $DATAFILE_1 = "/oracle/oradata/$UPPER_SID";
+        $DATAFILE_2 = "/oracle/oradata/$UPPER_SID";
+        $FRA = "/oracle/fra/$UPPER_SID";
+        $CONTROLFILE = "$FRA/controlfile";
+
+#-----Directory exist checker
+        our $CMD_CHECK_DIR_DF1 = "ls -altr $DATAFILE_1 2>/dev/null | wc -l";
+        our $DIR_EXIST1 = `$CMD_CHECK_DIR_DF1`;
+
+        our $CMD_CHECK_DIR_DF2 = "ls -altr $DATAFILE_2 2>/dev/null | wc -l";
+        our $DIR_EXIST2 = `$CMD_CHECK_DIR_DF2`;
+
+        our $CMD_CHECK_DIR_FRA = "ls -altr $FRA 2>/dev/null | wc -l";
+        our $DIR_EXIST3 = `$CMD_CHECK_DIR_FRA`;
+
+        our $CMD_CHECK_DIR_CONTROLFILE = "ls -altr $CONTROLFILE 2>/dev/null | wc -l";
+        our $DIR_EXIST4 = `$CMD_CHECK_DIR_CONTROLFILE`;
+
+
+#-------Directory creator
+
+        #---DATAFILES 1
+        if ($DIR_EXIST1 == 0)
+        {
+                print color ("blue"),"Datafile directory 1 does not exist creating a new one\n" ,color("reset") ;
+                our $CMD_MKDIR_DATAFILES_1 = "mkdir -p $DATAFILE_1";
+                `$CMD_MKDIR_DATAFILES_1`;
+
+        }
+        else
+        {
+                 print  color ("blue"),"Skipping directory Creation for Datafiles directory 1....\n" ,color("reset");
+        }
+
+        #---DATAFILES 2
+        if ($DIR_EXIST2 == 0)
+        {
+                print color ("blue"),"Datafile directory 2 does not exist, creating a new one\n" ,color("reset");
+                our $CMD_MKDIR_DATAFILES_2 = "mkdir -p $DATAFILE_2";
+                `$CMD_MKDIR_DATAFILES_2`;
+
+        }
+        else
+        {
+                 print color ("blue"),"Skipping directory Creation for Datafiles directory 2....\n" ,color("reset");
+        }
+
+        #---FRA
+        if ($DIR_EXIST3 == 0)
+        {
+                print color ("blue"),"FRA directory does not exist, creating a new one\n" ,color("reset");
+                our $CMD_MKDIR_FRA = "mkdir -p $FRA";
+                `$CMD_MKDIR_FRA`;
+
+        }
+        else
+        {
+                 print color ("blue"),"Skipping directory Creation for FRA....\n"  ,color("reset");
+        }
+
+        #--CONTROLFILE
+        if ($DIR_EXIST4 == 0)
+        {
+        print color ("blue"), "Controlfile directory does not exist creating a new one\n"  ,color("reset");
+        our $CMD_MKDIR_CTL = "mkdir -p $CONTROLFILE";
+        `$CMD_MKDIR_CTL`;
+		        }
+        else
+        {
+         print color ("blue"),"Skipping directory Creation for controlfile....\n"  ,color("reset");
+        }
+
+
+print  color ("green"), "Source: \n", color("reset");
+print "$SOURCE_DB \n";
+
+
+#---Print directory setup
+
+print  color ("green"), "Target_name: \n", color("reset");
+print "$DB_SID \n";
+
+print  color ("green"), "Datafiles will be restored in: \n", color("reset");
+print "$DATAFILE_1 \n";
+
+print  color ("green"),"Datafiles multiplexed directory:\n" ,color("reset");
+print "$DATAFILE_2 \n";
+
+print  color ("green"), "Archivelogs directory: \n", color("reset");
+print "$FRA \n";
+
+print  color ("green"), "Controlfiles directory: \n", color("reset");
+print "$CONTROLFILE \n";
+
+print  color ("green"), "Backup  directory: \n", color("reset");
+print "$BACKUP_DIR \n";
+	
+
+}
+
+elsif ($ENVIRONMENT eq "edud")
+{
+         print color ("red"), "Setting up Directories for OGA Live Environment \n", color("reset");
+#-----Defining Directories
+        $DATAFILE_1 = "/oracle/disk1/$UPPER_SID";
+        $DATAFILE_2 = "/oracle/disk2/$UPPER_SID";
+        $FRA = "/oracle/fra/$UPPER_SID";
+        $CONTROLFILE = "$FRA/controlfile";
+
+#-----Directory exist checker
+        our $CMD_CHECK_DIR_DF1 = "ls -altr $DATAFILE_1 2>/dev/null | wc -l";
+        our $DIR_EXIST1 = `$CMD_CHECK_DIR_DF1`;
+
+        our $CMD_CHECK_DIR_DF2 = "ls -altr $DATAFILE_2 2>/dev/null | wc -l";
+        our $DIR_EXIST2 = `$CMD_CHECK_DIR_DF2`;
+
+        our $CMD_CHECK_DIR_FRA = "ls -altr $FRA 2>/dev/null | wc -l";
+        our $DIR_EXIST3 = `$CMD_CHECK_DIR_FRA`;
+
+        our $CMD_CHECK_DIR_CONTROLFILE = "ls -altr $CONTROLFILE 2>/dev/null | wc -l";
+        our $DIR_EXIST4 = `$CMD_CHECK_DIR_CONTROLFILE`;
+
+
+#-------Directory creator
+
+        #---DATAFILES 1
+        if ($DIR_EXIST1 == 0)
+        {
+                print color ("blue"),"Datafile directory 1 does not exist creating a new one\n" ,color("reset") ;
+                our $CMD_MKDIR_DATAFILES_1 = "mkdir -p $DATAFILE_1";
+                `$CMD_MKDIR_DATAFILES_1`;
+
+        }
+        else
+        {
+                 print  color ("blue"),"Skipping directory Creation for Datafiles directory 1....\n" ,color("reset");
+        }
+
+        #---DATAFILES 2
+        if ($DIR_EXIST2 == 0)
+        {
+                print color ("blue"),"Datafile directory 2 does not exist, creating a new one\n" ,color("reset");
+                our $CMD_MKDIR_DATAFILES_2 = "mkdir -p $DATAFILE_2";
+                `$CMD_MKDIR_DATAFILES_2`;
+
+        }
+        else
+        {
+                 print color ("blue"),"Skipping directory Creation for Datafiles directory 2....\n" ,color("reset");
+        }
+
+        #---FRA
+        if ($DIR_EXIST3 == 0)
+        {
+                print color ("blue"),"FRA directory does not exist, creating a new one\n" ,color("reset");
+                our $CMD_MKDIR_FRA = "mkdir -p $FRA";
+                `$CMD_MKDIR_FRA`;
+
+        }
+        else
+        {
+                 print color ("blue"),"Skipping directory Creation for FRA....\n"  ,color("reset");
+        }
+
+        #--CONTROLFILE
+        if ($DIR_EXIST4 == 0)
+        {
+        print color ("blue"), "Controlfile directory does not exist creating a new one\n"  ,color("reset");
+        our $CMD_MKDIR_CTL = "mkdir -p $CONTROLFILE";
+        `$CMD_MKDIR_CTL`;
+		        }
+        else
+        {
+         print color ("blue"),"Skipping directory Creation for controlfile....\n"  ,color("reset");
+        }
+
+
+print  color ("green"), "Source: \n", color("reset");
+print "$SOURCE_DB \n";
+
+
+#---Print directory setup
+
+print  color ("green"), "Target_name: \n", color("reset");
+print "$DB_SID \n";
+
+print  color ("green"), "Datafiles will be restored in: \n", color("reset");
+print "$DATAFILE_1 \n";
+
+print  color ("green"),"Datafiles multiplexed directory:\n" ,color("reset");
+print "$DATAFILE_2 \n";
+
+print  color ("green"), "Archivelogs directory: \n", color("reset");
+print "$FRA \n";
+
+print  color ("green"), "Controlfiles directory: \n", color("reset");
+print "$CONTROLFILE \n";
+
+print  color ("green"), "Backup  directory: \n", color("reset");
+print "$BACKUP_DIR \n";
+}
+else 
+{
+
+ print color ("red"), "No environment Detected. Go crazy and enter your desired directories! \n", color("reset");
+
+}
+
 
 
 #================================================================================================================================
@@ -157,14 +638,14 @@ system ($CMD_START_NOMOUNT_0);
 #Restore the control file 		                                                                                        |
 #================================================================================================================================
 
-our $CMD_CTL_EXIST = "ls -altr $BACKUP_DIR | grep -i control | wc -l ";
+our $CMD_CTL_EXIST = "ls -altr $BACKUP_DIR 2>/dev/null | grep -i control | wc -l ";
 our $CTL_EXIST = `$CMD_CTL_EXIST`;
 our $CTL_FILE_LOCATOR = "ls  $BACKUP_DIR | grep -i control";
 our $CTL_FILE_BACKUP = `$CTL_FILE_LOCATOR`;
 chomp $CTL_FILE_BACKUP;
 
 
-if ($CTL_EXIST >= 1)
+if ($CTL_EXIST == 1)
 {
 
 	print "Backup Exist \n";
@@ -185,6 +666,14 @@ if ($CTL_EXIST >= 1)
 		
 
 }
+elsif ($CTL_EXIST >= 2)
+
+{
+	print  color ("red"), "You have more than 2 controlfiles in the backup directory. Shutting down database instance! \n", color("reset");	
+	system ($CMD_SHUTDOWN_ABORT);
+        exit ();
+
+}
 else 
 {
 	print  color ("red"), "DudeMan your backup does not exist. Shutting down database instance! \n", color("reset");
@@ -193,6 +682,28 @@ else
 		
 
 }
+#================================================================================================================================
+#Ensure that controlfile is succesfully restored                                                                                |
+#================================================================================================================================
+
+our $CMD_CTLFILE_EXIST = "ls -altr $CONTROLFILE/$DB_SID.ctl | grep -i control | wc -l";
+our $CMD_CTL_CHECKER = `$CMD_CTLFILE_EXIST`;
+if ($CMD_CTL_CHECKER == 0)
+{
+	 print  color ("red"), "Failed controlfile restoration, shutting down database and exiting.... \n", color("reset");
+	 system ($CMD_SHUTDOWN_ABORT);
+	 exit ();
+
+
+}
+
+
+
+
+
+
+
+
 
 #================================================================================================================================
 #Generate Restore Script                                                                                                        |
