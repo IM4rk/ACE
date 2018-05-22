@@ -589,7 +589,7 @@ else
 
 }
 
-
+=cut
 
 #================================================================================================================================
 #Set up PFILE															|
@@ -638,14 +638,14 @@ system ($CMD_START_NOMOUNT_0);
 #Restore the control file 		                                                                                        |
 #================================================================================================================================
 
-our $CMD_CTL_EXIST = "ls -altr $BACKUP_DIR 2>/dev/null | grep -i control | wc -l ";
+our $CMD_CTL_EXIST = "ls -altr $BACKUP_DIR | grep -i control | wc -l ";
 our $CTL_EXIST = `$CMD_CTL_EXIST`;
 our $CTL_FILE_LOCATOR = "ls  $BACKUP_DIR | grep -i control";
 our $CTL_FILE_BACKUP = `$CTL_FILE_LOCATOR`;
 chomp $CTL_FILE_BACKUP;
 
 
-if ($CTL_EXIST == 1)
+if ($CTL_EXIST >= 1)
 {
 
 	print "Backup Exist \n";
@@ -666,14 +666,6 @@ if ($CTL_EXIST == 1)
 		
 
 }
-elsif ($CTL_EXIST >= 2)
-
-{
-	print  color ("red"), "You have more than 2 controlfiles in the backup directory. Shutting down database instance! \n", color("reset");	
-	system ($CMD_SHUTDOWN_ABORT);
-        exit ();
-
-}
 else 
 {
 	print  color ("red"), "DudeMan your backup does not exist. Shutting down database instance! \n", color("reset");
@@ -682,22 +674,6 @@ else
 		
 
 }
-#================================================================================================================================
-#Ensure that controlfile is succesfully restored                                                                                |
-#================================================================================================================================
-
-our $CMD_CTLFILE_EXIST = "ls -altr $CONTROLFILE/$DB_SID.ctl | grep -i control | wc -l";
-our $CMD_CTL_CHECKER = `$CMD_CTLFILE_EXIST`;
-if ($CMD_CTL_CHECKER == 0)
-{
-	 print  color ("red"), "Failed controlfile restoration, shutting down database and exiting.... \n", color("reset");
-	 system ($CMD_SHUTDOWN_ABORT);
-	 exit ();
-
-
-}
-
-
 
 #================================================================================================================================
 #Generate Restore Script                                                                                                        |

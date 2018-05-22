@@ -718,6 +718,9 @@ our $CMD_CHANGE_RESTORE_DIR_0 = "perl -pi.back -e 's{/oracle/disk1/$UPPER_SID}{$
 our $CMD_CHANGE_RESTORE_DIR_1 = "perl -pi.back -e 's{/oracle/disk2/$UPPER_SID}{$DATAFILE_2}g;' $RESTORE_SCRIPT_DIR/$UPPER_SID\_restore.rcv";
 `$CMD_CHANGE_RESTORE_DIR_1`;
 
+
+
+
 #================================================================================================================================
 #Temporarily disable OMF                                                                                                        |
 #================================================================================================================================
@@ -744,6 +747,7 @@ our $CMD_CREATE_REDOS = "$SQL_SCRIPTS/touch.sh_$DB_SID";
 our $CMD_RENAME_REDO = "sqlplus / as sysdba \@$SQL_SCRIPTS/rename_redo.sql";
 `$CMD_RENAME_REDO`;
 
+=cut
 
 #================================================================================================================================
 #Restore and Recover database                                                                                                   |
