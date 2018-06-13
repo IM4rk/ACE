@@ -747,6 +747,19 @@ our $CMD_CREATE_REDOS = "$SQL_SCRIPTS/touch.sh_$DB_SID";
 our $CMD_RENAME_REDO = "sqlplus / as sysdba \@$SQL_SCRIPTS/rename_redo.sql";
 `$CMD_RENAME_REDO`;
 
+
+
+#================================================================================================================================
+#Delete resetlogs and display the restore script that was generated                                                             |
+#================================================================================================================================
+
+our $CMT_STRING = "#alter";
+print "Restore script in: $RESTORE_SCRIPT_DIR/$UPPER_SID\_restore.rcv \n";
+our $CMD_REMOVE_RSTLG = "perl -pi.back -e 's{alter database open resetlogs;}{$CMT_STRING}g;' $RESTORE_SCRIPT_DIR/$UPPER_SID\_restore.rcv";
+`$CMD_REMOVE_RSTLG`;
+
+
+
 =cut
 
 #================================================================================================================================
