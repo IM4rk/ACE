@@ -265,7 +265,7 @@ print "$BACKUP_DIR \n";
 
 }
 
-elsif ($ENVIRONMENT eq "db1.") 
+elsif ($ENVIRONMENT eq "db1." || $ENVIRONMENT eq "db2.") 
 {
 	 print color ("red"), "Setting up Directories for AWS Live Environment \n", color("reset");
 
